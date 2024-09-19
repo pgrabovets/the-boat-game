@@ -1,14 +1,46 @@
-export function getCanvasSize(canvasEl: any) {
-  return {
-    width: canvasEl.width as number,
-    height: canvasEl.height as number,
+import type ICanvas from "@/types/ICanvas";
+
+export default function Canvas(target: HTMLElement, offset: number): ICanvas {
+  const canvas = document.createElement("canvas");
+  const canvasCtx = canvas.getContext("2d");
+  canvas.style.marginLeft = `${offset}px`;
+  canvas.width = window.innerWidth - offset;
+  canvas.height = window.innerHeight;
+
+  if (canvasCtx) {
+    canvasCtx.imageSmoothingEnabled = false;
+    canvasCtx.scale(2, 2);
+  }
+
+  const handleResize = () => {
+    canvas.width = window.innerWidth - offset;
+    canvas.height = window.innerHeight;
   };
-}
 
-export function getContext(canvasEl: any) {
-  return canvasEl.getContext("2d");
-}
+  window.addEventListener("resize", handleResize);
 
-export function clearCanvas(canvasCtx: any, width: number, height: number) {
-  return canvasCtx.clearRect(0, 0, width, height);
+  return {
+    el: canvas,
+    ctx: canvasCtx,
+
+    getCanvasSize() {
+      return {
+        width: canvas.width,
+        height: canvas.height,
+      };
+    },
+
+    clear() {
+      canvasCtx?.clearRect(0, 0, canvas.width, canvas.height);
+    },
+
+    mount() {
+      target.appendChild(canvas);
+    },
+
+    detach() {
+      window.removeEventListener("resize", handleResize);
+      target.removeChild(canvas);
+    },
+  };
 }

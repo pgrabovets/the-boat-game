@@ -1,4 +1,10 @@
-import type IPlayer from "@/types/IPlayer";
+import type { IPlayer, Direction } from "@/types/IPlayer";
+
+type PlayerState = {
+  xPos: number;
+  yPos: number;
+  direction: Direction;
+};
 
 export function Player(canvasEl: any, img: HTMLImageElement): IPlayer {
   const canvas = canvasEl;
@@ -21,9 +27,10 @@ export function Player(canvasEl: any, img: HTMLImageElement): IPlayer {
     },
   };
 
-  const state = {
+  const state: PlayerState = {
     xPos: 0,
     yPos: 0,
+    direction: "right",
   };
 
   return {
@@ -33,14 +40,31 @@ export function Player(canvasEl: any, img: HTMLImageElement): IPlayer {
     },
 
     getPosition() {
-      return state;
+      return {
+        xPos: state.xPos,
+        yPos: state.yPos,
+      };
+    },
+
+    setDirecction(dir: Direction) {
+      state.direction = dir;
     },
 
     draw() {
+      let frame = frames.LEFT_SIDE;
+
+      if (state.direction === "right") {
+        frame = frames.RIGHT_SIDE;
+      }
+
+      if (state.direction === "left") {
+        frame = frames.LEFT_SIDE;
+      }
+
       canvasCtx.drawImage(
         spriteSheetImg,
-        frames.LEFT_SIDE.xPos,
-        frames.LEFT_SIDE.yPos,
+        frame.xPos,
+        frame.yPos,
         config.WIDTH,
         config.HEIGHT,
         state.xPos,

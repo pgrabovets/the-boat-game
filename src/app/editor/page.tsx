@@ -1,59 +1,58 @@
 "use client";
-import { createPortal } from "react-dom";
-import { useWindowSize } from "@/hooks/use-window-size";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "flowbite-react";
 import { Play } from "lucide-react";
 import EditorScene from "@/scenes/editor-scene";
+import Canvas from "@/core/canvas";
 
 export default function Editor() {
-  const canvasRef = useRef(null);
-  const [size] = useWindowSize();
+  const [cursorPos, setCursorPos] = useState("");
   const [isMounted, setIsMounted] = useState(false);
-  const now = Date.now();
+  const canvasOffset = 320;
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
   useEffect(() => {
-    let dispose = null;
-
-    if (canvasRef?.current) {
-      const scene = EditorScene(canvasRef.current);
-      scene.preload().then(() => {
-        scene.init();
-      });
-      dispose = scene.startListening();
+    if (!isMounted) {
+      return;
     }
 
+    const canvas = Canvas(document.body, canvasOffset);
+    canvas.mount();
+    const scene = EditorScene(canvas);
+
     return () => {
-      dispose && dispose();
+      canvas.detach();
+      scene.detach();
     };
-  }, [isMounted, size, canvasRef.current]);
+  }, [isMounted]);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setCursorPos(`${e.x} ${e.y}`);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
 
   return (
-    <>
-      <div className="flex flex-row absolute inset-0">
-        <div className="w-[320px] bg-slate-50 p-2">
+    <div className="absolute inset-0 w-[320px] h-[100vh] bg-slate-50 p-2">
+      <div className="flex flex-col justify-between h-full">
+        <div>
           <Button color="dark">
             <div className="flex flex-row items-center gap-1">
               <Play size={16} /> Run
             </div>
           </Button>
         </div>
+        <div className="text-sm">{cursorPos}</div>
       </div>
-      {isMounted &&
-        createPortal(
-          <canvas
-            key={now}
-            width={size.width - 320}
-            ref={canvasRef}
-            height={size.height}
-            className="ml-[320px]"
-          ></canvas>,
-          document.body
-        )}
-    </>
+    </div>
   );
 }
