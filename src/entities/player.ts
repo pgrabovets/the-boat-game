@@ -1,15 +1,20 @@
-import type { IPlayer, Direction } from "@/types/IPlayer";
+import type { Direction } from "@/types/IPlayer";
 
 type PlayerState = {
   xPos: number;
   yPos: number;
   direction: Direction;
+  offset: {
+    x: number;
+    y: number;
+  };
 };
 
-export function Player(canvasEl: any, img: HTMLImageElement): IPlayer {
+export function Player(canvasEl: HTMLCanvasElement) {
   const canvas = canvasEl;
   const canvasCtx = canvas.getContext("2d");
-  const spriteSheetImg = img;
+
+  let spriteSheetImg: HTMLImageElement | null = null;
 
   const config = {
     WIDTH: 40,
@@ -31,12 +36,25 @@ export function Player(canvasEl: any, img: HTMLImageElement): IPlayer {
     xPos: 0,
     yPos: 0,
     direction: "right",
+    offset: {
+      x: 0,
+      y: 0,
+    },
   };
 
   return {
+    setSpritSheetImg(img: HTMLImageElement) {
+      spriteSheetImg = img;
+    },
+
     setPosition(x: number, y: number) {
       state.xPos = x;
       state.yPos = y;
+    },
+
+    setOffset(x: number, y: number) {
+      state.offset.x = x;
+      state.offset.y = y;
     },
 
     getPosition() {
@@ -51,6 +69,8 @@ export function Player(canvasEl: any, img: HTMLImageElement): IPlayer {
     },
 
     draw() {
+      if (!spriteSheetImg) return;
+
       let frame = frames.LEFT_SIDE;
 
       if (state.direction === "right") {
@@ -61,14 +81,14 @@ export function Player(canvasEl: any, img: HTMLImageElement): IPlayer {
         frame = frames.LEFT_SIDE;
       }
 
-      canvasCtx.drawImage(
+      canvasCtx?.drawImage(
         spriteSheetImg,
         frame.xPos,
         frame.yPos,
         config.WIDTH,
         config.HEIGHT,
-        state.xPos,
-        state.yPos,
+        state.xPos + state.offset.x,
+        state.yPos + state.offset.y,
         config.WIDTH,
         config.HEIGHT
       );

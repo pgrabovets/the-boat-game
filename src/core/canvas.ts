@@ -1,23 +1,28 @@
-import type ICanvas from "@/types/ICanvas";
-
-export default function Canvas(target: HTMLElement, offset: number): ICanvas {
+export default function Canvas(
+  target: HTMLElement,
+  offsetLeft: number,
+  scale: number
+) {
   const canvas = document.createElement("canvas");
   const canvasCtx = canvas.getContext("2d");
-  canvas.style.marginLeft = `${offset}px`;
-  canvas.width = window.innerWidth - offset;
-  canvas.height = window.innerHeight;
 
-  if (canvasCtx) {
-    canvasCtx.imageSmoothingEnabled = false;
-    canvasCtx.scale(2, 2);
-  }
+  const init = () => {
+    canvas.style.marginLeft = `${offsetLeft}px`;
+    canvas.width = window.innerWidth - offsetLeft;
+    canvas.height = window.innerHeight;
+    canvas.className = "canvas-bg-color";
+    if (canvasCtx) {
+      canvasCtx.imageSmoothingEnabled = false;
+      canvasCtx.scale(scale, scale);
+    }
+  };
 
   const handleResize = () => {
-    canvas.width = window.innerWidth - offset;
-    canvas.height = window.innerHeight;
+    init();
   };
 
   window.addEventListener("resize", handleResize);
+  init();
 
   return {
     el: canvas,
@@ -27,6 +32,13 @@ export default function Canvas(target: HTMLElement, offset: number): ICanvas {
       return {
         width: canvas.width,
         height: canvas.height,
+      };
+    },
+
+    getMousePosition(e: MouseEvent) {
+      return {
+        xPos: Math.floor((e.x - offsetLeft) / scale),
+        yPos: Math.floor(e.y / scale),
       };
     },
 
