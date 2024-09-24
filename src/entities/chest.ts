@@ -1,20 +1,20 @@
 import Sprite from "@/core/sprite";
 import type Entity from "@/types/Entity";
 
-export function SeaMine(
+export function Chest(
   canvasEl: HTMLCanvasElement,
   spriteSheet: HTMLImageElement
 ): Entity {
   const sprite = Sprite(canvasEl, {
-    sx: 37,
+    sx: 1,
     sy: 1,
-    width: 13,
-    height: 13,
+    width: 18,
+    height: 15,
     img: spriteSheet,
   });
 
   return {
-    type: "sea_mine",
+    type: "chest",
     ...sprite,
   };
 }

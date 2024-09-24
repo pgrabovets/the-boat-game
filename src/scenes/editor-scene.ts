@@ -2,7 +2,10 @@ import loader from "@/core/loader";
 import Canvas from "@/core/canvas";
 import { Player } from "@/entities/player";
 import { SeaMine } from "@/entities/sea-mine";
-import TileMap from "@/entities/tile-map";
+import { Chest } from "@/entities/chest";
+import { Oxygen } from "@/entities/oxygen";
+import { Battery } from "@/entities/battery";
+import TileMap from "@/core/tile-map";
 import type { ITileMap } from "@/types/ITileMap";
 import type Entity from "@/types/Entity";
 
@@ -217,13 +220,25 @@ export default function EditorScene() {
     },
 
     createEntity(key: string) {
+      const sprites = loader.getImage("sprites_sheet");
+      if (!sprites) {
+        return;
+      }
+
       if (key === "sea_mine") {
-        const mineRes = loader.getImage("sprites_sheet");
-        if (mineRes) {
-          const mine = SeaMine(canvas.el, mineRes.img);
-          mine.setPosition(16, 16);
-          newEntity = mine;
-        }
+        newEntity = SeaMine(canvas.el, sprites.img);
+      }
+
+      if (key === "chest") {
+        newEntity = Chest(canvas.el, sprites.img);
+      }
+
+      if (key === "oxygen") {
+        newEntity = Oxygen(canvas.el, sprites.img);
+      }
+
+      if (key === "battery") {
+        newEntity = Battery(canvas.el, sprites.img);
       }
     },
 
