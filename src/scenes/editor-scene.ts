@@ -1,13 +1,11 @@
 import loader from "@/core/loader";
 import Canvas from "@/core/canvas";
 import { Player } from "@/entities/player";
-import { SeaMine } from "@/entities/sea-mine";
-import { Chest } from "@/entities/chest";
-import { Oxygen } from "@/entities/oxygen";
-import { Battery } from "@/entities/battery";
 import TileMap from "@/core/tile-map";
 import type { ITileMap } from "@/types/ITileMap";
 import type Entity from "@/types/Entity";
+import type ILevel from "@/types/ILevel";
+import { createGameEntity } from "@/core/game";
 
 const config = {
   canvasScaleFactor: 2,
@@ -165,17 +163,33 @@ export default function EditorScene() {
     canvas.mount();
 
     const boatRes = loader.getImage("boat");
-    if (boatRes) {
-      player.setSpritSheetImg(boatRes.img);
-      player.setPosition(100, 200);
-      startListening();
-    }
-
-    const mapRes = loader.getTileMap("test_level");
     const tilesetRes = loader.getImage("tileset");
+    const levelRes = loader.getLevel("level_01");
+    const sprites = loader.getImage("sprites_sheet");
 
-    if (mapRes && tilesetRes) {
-      tilemap = TileMap(canvas.el, tilesetConfig, tilesetRes.img, mapRes.data);
+    if (tilesetRes && levelRes && boatRes && sprites) {
+      tilemap = TileMap(
+        canvas.el,
+        tilesetConfig,
+        tilesetRes.img,
+        levelRes.level.tilemap
+      );
+
+      player.setSpritSheetImg(boatRes.img);
+      player.setPosition(
+        levelRes.level.player.xPos,
+        levelRes.level.player.yPos
+      );
+
+      levelRes.level.entities.forEach((item) => {
+        const entity = createGameEntity(canvas.el, item.type, sprites.img);
+        if (entity) {
+          entity.setPosition(item.xPos, item.yPos);
+          entities.push(entity);
+        }
+      });
+
+      startListening();
     }
   };
 
@@ -184,7 +198,7 @@ export default function EditorScene() {
       loader.loadImage("boat", "/images/boat_sprite_sheet.png"),
       loader.loadImage("sprites_sheet", "/images/sprites_sheet.png"),
       loader.loadImage("tileset", "/images/tileset.png"),
-      loader.loadTileMap("test_level", "/test_level.json"),
+      loader.loadLevel("level_01", "/level_01.json"),
     ]).then(() => {
       init();
       update();
@@ -211,12 +225,20 @@ export default function EditorScene() {
   preload();
 
   return {
-    getTilemapData() {
-      if (tilemap) {
-        return tilemap.data;
-      }
-
-      return null;
+    getLevelData() {
+      const level: ILevel = {
+        player: player.getPosition(),
+        tilemap: tilemap?.data || [[]],
+        entities: entities.map((item) => {
+          const { xPos, yPos } = item.getPosition();
+          return {
+            type: item.type,
+            xPos: xPos,
+            yPos: yPos,
+          };
+        }),
+      };
+      return level;
     },
 
     createEntity(key: string) {
@@ -224,22 +246,7 @@ export default function EditorScene() {
       if (!sprites) {
         return;
       }
-
-      if (key === "sea_mine") {
-        newEntity = SeaMine(canvas.el, sprites.img);
-      }
-
-      if (key === "chest") {
-        newEntity = Chest(canvas.el, sprites.img);
-      }
-
-      if (key === "oxygen") {
-        newEntity = Oxygen(canvas.el, sprites.img);
-      }
-
-      if (key === "battery") {
-        newEntity = Battery(canvas.el, sprites.img);
-      }
+      newEntity = createGameEntity(canvas.el, key, sprites.img);
     },
 
     setCurrentTile(tile: number) {

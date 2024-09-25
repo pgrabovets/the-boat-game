@@ -1,3 +1,5 @@
+import type ILevel from "@/types/ILevel";
+
 export type ImageRes = {
   name: string;
   src: string;
@@ -11,6 +13,8 @@ export type TileMapRes = {
 
 const images: ImageRes[] = [];
 const tilemaps: TileMapRes[] = [];
+
+const levels: { name: string; level: ILevel }[] = [];
 
 function loadImage(name: string, src: string): Promise<ImageRes> {
   const image = images.find((item) => {
@@ -63,9 +67,31 @@ function getTileMap(name: string) {
   });
 }
 
+function loadLevel(name: string, url: string): Promise<ILevel> {
+  return fetch(url)
+    .then((res) => {
+      return res.json();
+    })
+    .then((data: ILevel) => {
+      levels.push({
+        name: name,
+        level: data,
+      });
+      return data;
+    });
+}
+
+function getLevel(name: string) {
+  return levels.find((item) => {
+    return name === item.name;
+  });
+}
+
 export default {
   loadImage,
   getImage,
   loadTileMap,
+  loadLevel,
+  getLevel,
   getTileMap,
 };

@@ -6,7 +6,7 @@ import TilesetTool from "@/app/components/tileset-tool";
 import EntityTool from "@/app/components/entity-tool";
 import EditorScene from "@/scenes/editor-scene";
 import { mapGenerate } from "@/editor/map-generate";
-import { saveMapData } from "@/app/actions";
+import { saveLevelData } from "@/app/actions";
 import type { IEditorScene } from "@/types/IEditorScene";
 
 export default function Editor() {
@@ -14,8 +14,6 @@ export default function Editor() {
   const [tile, setTile] = useState(1);
   const [scene, setScene] = useState<IEditorScene | null>(null);
   const [isGeneratingMap, setIsGenerationgMap] = useState(false);
-
-  const LEVEL_NAME = "test_level";
 
   const handleTileSelect = (index: number) => {
     setTile(index + 1);
@@ -46,16 +44,16 @@ export default function Editor() {
   const handleGenerateMap = () => {
     setIsGenerationgMap(true);
     mapGenerate((data) => {
-      saveMapData(LEVEL_NAME, data);
       setIsGenerationgMap(false);
     });
   };
 
   const handleSaveMap = () => {
-    const data = scene?.getTilemapData();
-    if (data) {
-      saveMapData(LEVEL_NAME, data);
+    if (!scene) {
+      return;
     }
+    const level = scene.getLevelData();
+    saveLevelData("level_01", level);
   };
 
   const handleEntityCreate = (key: string) => {
@@ -78,10 +76,10 @@ export default function Editor() {
             color="light"
             onClick={handleGenerateMap}
           >
-            Generate map
+            Generate level
           </Button>
           <Button color="light" onClick={handleSaveMap}>
-            Save map
+            Save level
           </Button>
         </div>
         <div>
