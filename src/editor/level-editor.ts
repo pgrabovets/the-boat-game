@@ -1,34 +1,17 @@
-import loader from "@/core/loader";
 import Canvas from "@/core/canvas";
 import { Player } from "@/entities/player";
 import TileMap from "@/core/tile-map";
-import type { ITileMap } from "@/types/ITileMap";
+import SpriteSheet from "@/core/sprite-sheet";
 import type Entity from "@/types/Entity";
 import type ILevel from "@/types/ILevel";
 import { createGameEntity } from "@/core/game";
 
-const config = {
-  canvasScaleFactor: 2,
-  canvasOffset: 320,
-};
+export default function LevelEditor(level: ILevel) {
+  const canvas = Canvas(document.body, 320);
 
-const tilesetConfig = {
-  tilesW: 8,
-  tilesH: 10,
-  tileSize: 16,
-  offset: 1,
-  gap: 2,
-};
-
-export default function EditorScene() {
-  const canvas = Canvas(
-    document.body,
-    config.canvasOffset,
-    config.canvasScaleFactor
-  );
-
-  let player = Player(canvas.el);
-  let tilemap: ITileMap | null = null;
+  const player = Player(canvas.el);
+  const tilemap = TileMap(canvas.el, level.tilemap);
+  const spriteSheet = SpriteSheet();
 
   const position = {
     xPos: 0,
@@ -42,7 +25,11 @@ export default function EditorScene() {
   let newEntity: Entity | null = null;
 
   const onKeyDown = (e: KeyboardEvent) => {
-    const { tileSize } = tilesetConfig;
+    if (!tilemap) {
+      return;
+    }
+
+    const tileSize = tilemap.getTileSize();
 
     if (e.key === "ArrowUp") {
       position.yPos -= tileSize;
@@ -70,12 +57,12 @@ export default function EditorScene() {
     if (tilemap) {
       const tilemapPos = tilemap.getPosition();
 
-      let xPos = x - tilemapPos.xPos;
-
+      const xPos = x - tilemapPos.xPos;
       const yPos = y - tilemapPos.yPos;
+      const tileSize = tilemap.getTileSize();
 
-      const j = Math.floor(xPos / tilesetConfig.tileSize);
-      const i = Math.floor(yPos / tilesetConfig.tileSize);
+      const j = Math.floor(xPos / tileSize);
+      const i = Math.floor(yPos / tileSize);
 
       if (i >= 0 && j >= 0) {
         const tile: number = tilemap.data[i][j];
@@ -162,47 +149,30 @@ export default function EditorScene() {
   const init = () => {
     canvas.mount();
 
-    const boatRes = loader.getImage("boat");
-    const tilesetRes = loader.getImage("tileset");
-    const levelRes = loader.getLevel("level_01");
-    const sprites = loader.getImage("sprites_sheet");
+    player.setPosition(level.player.xPos, level.player.yPos);
 
-    if (tilesetRes && levelRes && boatRes && sprites) {
-      tilemap = TileMap(
+    level.entities.forEach((item) => {
+      const entity = createGameEntity(
         canvas.el,
-        tilesetConfig,
-        tilesetRes.img,
-        levelRes.level.tilemap
+        item.type,
+        spriteSheet.getImage()
       );
+      if (entity) {
+        entity.setPosition(item.xPos, item.yPos);
+        entities.push(entity);
+      }
+    });
 
-      player.setSpritSheetImg(boatRes.img);
-      player.setPosition(
-        levelRes.level.player.xPos,
-        levelRes.level.player.yPos
-      );
-
-      levelRes.level.entities.forEach((item) => {
-        const entity = createGameEntity(canvas.el, item.type, sprites.img);
-        if (entity) {
-          entity.setPosition(item.xPos, item.yPos);
-          entities.push(entity);
-        }
-      });
-
-      startListening();
-    }
+    startListening();
   };
 
   const preload = () => {
-    Promise.all([
-      loader.loadImage("boat", "/images/boat_sprite_sheet.png"),
-      loader.loadImage("sprites_sheet", "/images/sprites_sheet.png"),
-      loader.loadImage("tileset", "/images/tileset.png"),
-      loader.loadLevel("level_01", "/level_01.json"),
-    ]).then(() => {
-      init();
-      update();
-    });
+    Promise.all([spriteSheet.load(), player.load(), tilemap.load()]).then(
+      () => {
+        init();
+        update();
+      }
+    );
   };
 
   const draw = () => {
@@ -242,11 +212,7 @@ export default function EditorScene() {
     },
 
     createEntity(key: string) {
-      const sprites = loader.getImage("sprites_sheet");
-      if (!sprites) {
-        return;
-      }
-      newEntity = createGameEntity(canvas.el, key, sprites.img);
+      newEntity = createGameEntity(canvas.el, key, spriteSheet.getImage());
     },
 
     setCurrentTile(tile: number) {

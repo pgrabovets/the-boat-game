@@ -17,6 +17,7 @@ export function Player(canvasEl: HTMLCanvasElement) {
   let spriteSheetImg: HTMLImageElement | null = null;
 
   const config = {
+    src: "/images/boat_sprite_sheet.png",
     WIDTH: 40,
     HEIGHT: 19,
   };
@@ -43,8 +44,15 @@ export function Player(canvasEl: HTMLCanvasElement) {
   };
 
   return {
-    setSpritSheetImg(img: HTMLImageElement) {
+    load() {
+      const img = new Image();
+      img.src = config.src;
       spriteSheetImg = img;
+      return new Promise((resolve) => {
+        img.addEventListener("load", () => {
+          resolve(img);
+        });
+      });
     },
 
     setPosition(x: number, y: number) {

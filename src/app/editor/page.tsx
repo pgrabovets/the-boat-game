@@ -4,19 +4,32 @@ import { Button } from "flowbite-react";
 import { Play } from "lucide-react";
 import TilesetTool from "@/app/components/tileset-tool";
 import EntityTool from "@/app/components/entity-tool";
-import EditorScene from "@/scenes/editor-scene";
-import { mapGenerate } from "@/editor/map-generate";
+import LevelEditor from "@/editor/level-editor";
+import { generateLevelData } from "@/editor/map-generate";
 import { saveLevelData } from "@/app/actions";
 import type { IEditorScene } from "@/types/IEditorScene";
+import type ILevel from "@/types/ILevel";
 
 export default function Editor() {
   const [isMounted, setIsMounted] = useState(false);
   const [tile, setTile] = useState(1);
-  const [scene, setScene] = useState<IEditorScene | null>(null);
+  const [level, setLevel] = useState<IEditorScene | null>(null);
   const [isGeneratingMap, setIsGenerationgMap] = useState(false);
 
   const handleTileSelect = (index: number) => {
     setTile(index + 1);
+  };
+
+  const fetchLevelData = () => {
+    fetch("/level_01.json")
+      .then((res) => {
+        return res.json();
+      })
+      .then((data: ILevel) => {
+        const level = LevelEditor(data);
+        level.setCurrentTile(tile);
+        setLevel(level);
+      });
   };
 
   useEffect(() => {
@@ -27,37 +40,45 @@ export default function Editor() {
     if (!isMounted) {
       return;
     }
-
-    const scene = EditorScene();
-    scene.setCurrentTile(tile);
-    setScene(scene);
-
+    fetchLevelData();
     return () => {
-      scene.detach();
+      level?.detach();
     };
   }, [isMounted]);
 
   useEffect(() => {
-    scene?.setCurrentTile(tile);
+    level?.setCurrentTile(tile);
   }, [tile]);
 
   const handleGenerateMap = () => {
     setIsGenerationgMap(true);
-    mapGenerate((data) => {
+    generateLevelData((data) => {
+      const levelData: ILevel = {
+        player: {
+          xPos: 0,
+          yPos: 0,
+        },
+        entities: [],
+        tilemap: data,
+      };
+      level?.detach();
       setIsGenerationgMap(false);
+
+      saveLevelData("level_01", levelData).then(() => {
+        fetchLevelData();
+      });
     });
   };
 
   const handleSaveMap = () => {
-    if (!scene) {
+    if (!level) {
       return;
     }
-    const level = scene.getLevelData();
-    saveLevelData("level_01", level);
+    saveLevelData("level_01", level.getLevelData());
   };
 
   const handleEntityCreate = (key: string) => {
-    scene?.createEntity(key);
+    level?.createEntity(key);
   };
 
   return (

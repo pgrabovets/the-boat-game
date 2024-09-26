@@ -5,7 +5,7 @@ type MapData = number[][];
 
 let interval: NodeJS.Timeout;
 
-export function mapGenerate(onComplete: (data: MapData) => void) {
+export function generateLevelData(onComplete: (data: MapData) => void) {
   const size = 40;
   const MAX_STEP = 800;
 

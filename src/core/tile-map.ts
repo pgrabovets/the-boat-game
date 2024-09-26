@@ -1,3 +1,5 @@
+import type { ITileMap } from "@/types/ITileMap";
+
 type TilesetRecord = Record<
   number,
   {
@@ -6,22 +8,22 @@ type TilesetRecord = Record<
   }
 >;
 
-type Config = {
-  tilesW: number;
-  tilesH: number;
-  tileSize: number;
-  offset: number;
-  gap: number;
-};
-
 export default function TileMap(
   canvasEl: HTMLCanvasElement,
-  config: Config,
-  tilesetImg: any,
   data: number[][]
-) {
-  const canvas = canvasEl;
+): ITileMap {
   const ctx = canvasEl.getContext("2d");
+
+  const tileset = {
+    src: "/images/tileset.png",
+    tilesW: 8,
+    tilesH: 10,
+    tileSize: 16,
+    offset: 1,
+    gap: 2,
+  };
+
+  let tilesetImg: HTMLImageElement = new Image();
 
   const state = {
     xPos: 0,
@@ -31,7 +33,7 @@ export default function TileMap(
   const createTilesetMap = () => {
     const tilesetMap: TilesetRecord = {};
 
-    const { offset, gap, tileSize, tilesW, tilesH } = config;
+    const { offset, gap, tileSize, tilesW, tilesH } = tileset;
 
     const length = tilesW * tilesH;
 
@@ -55,6 +57,17 @@ export default function TileMap(
   return {
     data,
 
+    load() {
+      const img = new Image();
+      img.src = tileset.src;
+      tilesetImg = img;
+      return new Promise((resolve) => {
+        img.addEventListener("load", () => {
+          resolve(img);
+        });
+      });
+    },
+
     setPosition(x: number, y: number) {
       state.xPos = x;
       state.yPos = y;
@@ -67,9 +80,11 @@ export default function TileMap(
       };
     },
 
-    draw() {
-      if (ctx === null) return;
+    getTileSize() {
+      return tileset.tileSize;
+    },
 
+    draw() {
       data.forEach((col, i) => {
         col.forEach((row, j) => {
           const tile = data[i][j];
@@ -78,7 +93,7 @@ export default function TileMap(
             return;
           }
 
-          const { tileSize } = config;
+          const { tileSize } = tileset;
 
           const sx = tilesetRecord[tile].sx;
           const sy = tilesetRecord[tile].sy;
@@ -87,7 +102,7 @@ export default function TileMap(
           const dx = j * tileSize + state.xPos;
           const dy = i * tileSize + state.yPos;
 
-          ctx.drawImage(
+          ctx?.drawImage(
             tilesetImg,
             sx,
             sy,

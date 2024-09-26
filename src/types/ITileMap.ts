@@ -5,5 +5,7 @@ export interface ITileMap {
     xPos: number;
     yPos: number;
   };
+  getTileSize(): number;
+  load(): Promise<HTMLImageElement>;
   draw(): void;
 }
