@@ -25,6 +25,12 @@ export default function LevelEditor(level: ILevel) {
   let newEntity: Entity | null = null;
 
   const onKeyDown = (e: KeyboardEvent) => {
+    const target: any = e.target;
+
+    if (target?.tagName === "INPUT") {
+      return;
+    }
+
     if (!tilemap) {
       return;
     }
@@ -195,6 +201,11 @@ export default function LevelEditor(level: ILevel) {
   preload();
 
   return {
+    setPlayerPos(x: number, y: number) {
+      player.setPosition(x, y);
+      draw();
+    },
+
     getLevelData() {
       const level: ILevel = {
         player: player.getPosition(),

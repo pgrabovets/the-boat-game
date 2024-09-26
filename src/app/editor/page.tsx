@@ -4,8 +4,9 @@ import { Button } from "flowbite-react";
 import { Play } from "lucide-react";
 import TilesetTool from "@/app/components/tileset-tool";
 import EntityTool from "@/app/components/entity-tool";
+import PlayerTool from "@/app/components/player-tool";
 import LevelEditor from "@/editor/level-editor";
-import { generateLevelData } from "@/editor/map-generate";
+import { generateTilemap } from "@/editor/map-generate";
 import { saveLevelData } from "@/app/actions";
 import type { IEditorScene } from "@/types/IEditorScene";
 import type ILevel from "@/types/ILevel";
@@ -14,7 +15,11 @@ export default function Editor() {
   const [isMounted, setIsMounted] = useState(false);
   const [tile, setTile] = useState(1);
   const [level, setLevel] = useState<IEditorScene | null>(null);
-  const [isGeneratingMap, setIsGenerationgMap] = useState(false);
+
+  const [playerPos, setPlayerPos] = useState({
+    x: 0,
+    y: 0,
+  });
 
   const handleTileSelect = (index: number) => {
     setTile(index + 1);
@@ -29,6 +34,10 @@ export default function Editor() {
         const level = LevelEditor(data);
         level.setCurrentTile(tile);
         setLevel(level);
+        setPlayerPos({
+          x: data.player.xPos,
+          y: data.player.yPos,
+        });
       });
   };
 
@@ -50,23 +59,25 @@ export default function Editor() {
     level?.setCurrentTile(tile);
   }, [tile]);
 
-  const handleGenerateMap = () => {
-    setIsGenerationgMap(true);
-    generateLevelData((data) => {
-      const levelData: ILevel = {
-        player: {
-          xPos: 0,
-          yPos: 0,
-        },
-        entities: [],
-        tilemap: data,
-      };
-      level?.detach();
-      setIsGenerationgMap(false);
+  useEffect(() => {
+    level?.setPlayerPos(playerPos.x, playerPos.y);
+  }, [playerPos]);
 
-      saveLevelData("level_01", levelData).then(() => {
-        fetchLevelData();
-      });
+  const handleGenerateMap = () => {
+    const data = generateTilemap(64);
+
+    const levelData: ILevel = {
+      player: {
+        xPos: 0,
+        yPos: 0,
+      },
+      entities: [],
+      tilemap: data,
+    };
+    level?.detach();
+
+    saveLevelData("level_01", levelData).then(() => {
+      fetchLevelData();
     });
   };
 
@@ -92,11 +103,7 @@ export default function Editor() {
           </Button>
         </div>
         <div className="flex flex-row flex-wrap gap-2">
-          <Button
-            isProcessing={isGeneratingMap}
-            color="light"
-            onClick={handleGenerateMap}
-          >
+          <Button color="light" onClick={handleGenerateMap}>
             Generate level
           </Button>
           <Button color="light" onClick={handleSaveMap}>
@@ -110,9 +117,17 @@ export default function Editor() {
           </div>
         </div>
 
-        <div>
-          <EntityTool onSelect={handleEntityCreate} />
-        </div>
+        <EntityTool onSelect={handleEntityCreate} />
+
+        <PlayerTool
+          position={playerPos}
+          onValueChange={(x, y) => {
+            setPlayerPos({
+              x,
+              y,
+            });
+          }}
+        />
       </div>
     </div>
   );
