@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "flowbite-react";
 import { Play } from "lucide-react";
+import { useMountedState } from "@/hooks/use-mounted-state";
 import TilesetTool from "@/app/components/tileset-tool";
 import EntityTool from "@/app/components/entity-tool";
 import PlayerTool from "@/app/components/player-tool";
@@ -11,8 +12,8 @@ import { saveLevelData } from "@/app/actions";
 import type { IEditorScene } from "@/types/IEditorScene";
 import type ILevel from "@/types/ILevel";
 
-export default function Editor() {
-  const [isMounted, setIsMounted] = useState(false);
+export default function EditorPage() {
+  const isMounted = useMountedState();
   const [tile, setTile] = useState(1);
   const [level, setLevel] = useState<IEditorScene | null>(null);
 
@@ -40,10 +41,6 @@ export default function Editor() {
         });
       });
   };
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!isMounted) {

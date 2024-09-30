@@ -1,7 +1,6 @@
-export default function Canvas(target: HTMLElement, offsetLeft: number) {
+export default function Canvas(target: HTMLElement, offsetLeft = 0, scale = 1) {
   const canvas = document.createElement("canvas");
   const canvasCtx = canvas.getContext("2d");
-  const scale = 2;
 
   const init = () => {
     canvas.style.marginLeft = `${offsetLeft}px`;

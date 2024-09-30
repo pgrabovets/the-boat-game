@@ -1,3 +1,4 @@
+import { boxCompare } from "@/utils/box-compare";
 import type { ITileMap } from "@/types/ITileMap";
 
 type TilesetRecord = Record<
@@ -10,7 +11,8 @@ type TilesetRecord = Record<
 
 export default function TileMap(
   canvasEl: HTMLCanvasElement,
-  data: number[][]
+  data: number[][],
+  scale = 1
 ): ITileMap {
   const ctx = canvasEl.getContext("2d");
 
@@ -85,6 +87,14 @@ export default function TileMap(
     },
 
     draw() {
+      const canvasRect = canvasEl.getBoundingClientRect();
+      const canvasBox = {
+        x: 0,
+        y: 0,
+        width: canvasRect.width / scale,
+        height: canvasRect.height / scale,
+      };
+
       data.forEach((col, i) => {
         col.forEach((row, j) => {
           const tile = data[i][j];
@@ -102,17 +112,26 @@ export default function TileMap(
           const dx = j * tileSize + state.xPos;
           const dy = i * tileSize + state.yPos;
 
-          ctx?.drawImage(
-            tilesetImg,
-            sx,
-            sy,
-            size,
-            size,
-            dx,
-            dy,
-            tileSize,
-            tileSize
-          );
+          const tileBox = {
+            x: dx,
+            y: dy,
+            width: tileSize,
+            height: tileSize,
+          };
+
+          if (boxCompare(canvasBox, tileBox)) {
+            ctx?.drawImage(
+              tilesetImg,
+              sx,
+              sy,
+              size,
+              size,
+              dx,
+              dy,
+              tileSize,
+              tileSize
+            );
+          }
         });
       });
     },

@@ -7,10 +7,15 @@ import type ILevel from "@/types/ILevel";
 import { createGameEntity } from "@/core/game";
 
 export default function LevelEditor(level: ILevel) {
-  const canvas = Canvas(document.body, 320);
+  const config = {
+    SCALE: 2,
+    OFFSET: 320,
+  };
+
+  const canvas = Canvas(document.body, config.OFFSET, config.SCALE);
 
   const player = Player(canvas.el);
-  const tilemap = TileMap(canvas.el, level.tilemap);
+  const tilemap = TileMap(canvas.el, level.tilemap, config.SCALE);
   const spriteSheet = SpriteSheet();
 
   const position = {
