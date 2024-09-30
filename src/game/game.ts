@@ -4,6 +4,7 @@ import TileMap from "@/core/tile-map";
 import SpriteSheet from "@/core/sprite-sheet";
 import { createGameEntity } from "@/core/game";
 import { keycodes } from "@/core/input";
+import { boxCompare } from "@/utils/box-compare";
 
 import type ILevel from "@/types/ILevel";
 import type Entity from "@/types/Entity";
@@ -76,6 +77,24 @@ export default function Game(target: HTMLElement, level: ILevel) {
     window.removeEventListener("resize", handleResize);
   };
 
+  const checkForCollision = () => {
+    const playerRect = player.getRect();
+    const tileBoxes = tilemap.getCollisionBoxes(playerRect);
+    const playerBoxes = player.getCollisionBoxes();
+
+    let isCollided = false;
+
+    playerBoxes.forEach((box1) => {
+      tileBoxes.forEach((box2) => {
+        if (boxCompare(box1, box2)) {
+          isCollided = true;
+        }
+      });
+    });
+
+    return isCollided;
+  };
+
   const init = () => {
     canvas.mount();
 
@@ -102,15 +121,20 @@ export default function Game(target: HTMLElement, level: ILevel) {
     const deltaTime = now - time || now;
     time = now;
 
-    tilemap.setPosition(position.xPos, position.yPos);
+    player.update();
+    if (checkForCollision()) {
+      player.toPrevStep();
+    }
+
+    position.xPos = (player.state.xPos - 430) * -1;
+    position.yPos = (player.state.yPos - 272) * -1;
+
     player.setOffset(position.xPos, position.yPos);
+    tilemap.setPosition(position.xPos, position.yPos);
     entities.forEach((item) => item.setOffset(position.xPos, position.yPos));
 
-    player.update();
-
     draw();
-
-    //scheduleNextUpdate();
+    scheduleNextUpdate();
   };
 
   const scheduleNextUpdate = () => {
@@ -124,8 +148,11 @@ export default function Game(target: HTMLElement, level: ILevel) {
 
     tilemap?.draw();
     entities.forEach((item) => item.draw());
+
+    const rect = player.getRect();
+    tilemap.drawCollisionChunk(rect);
+
     player.draw();
-    player.drawCollisionBoxes();
   };
 
   const preload = () => {

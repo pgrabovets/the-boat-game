@@ -1,11 +1,5 @@
 import type { Direction } from "@/types/IPlayer";
-
-type CollisionBox = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};
+import type { CollisionBox } from "@/types/CollisionBox";
 
 type PlayerState = {
   velocity: {
@@ -19,9 +13,13 @@ type PlayerState = {
     x: number;
     y: number;
   };
+  prev: {
+    xPos: number;
+    yPos: number;
+  };
 };
 
-export function Player(canvasEl: HTMLCanvasElement) {
+export function Player(canvasEl: HTMLCanvasElement, debug = false) {
   const canvas = canvasEl;
   const canvasCtx = canvas.getContext("2d");
 
@@ -31,8 +29,9 @@ export function Player(canvasEl: HTMLCanvasElement) {
     src: "/images/boat_sprite_sheet.png",
     WIDTH: 40,
     HEIGHT: 19,
-    VELOCITY_X: 0.5,
-    VELOCITY_Y: 0.25,
+    VELOCITY_X: 1,
+    VELOCITY_Y: 1,
+    MIN_Y: 25,
   };
 
   const frames = {
@@ -46,63 +45,20 @@ export function Player(canvasEl: HTMLCanvasElement) {
     },
   };
 
-  const collision: {
-    left: CollisionBox[];
-    right: CollisionBox[];
-  } = {
-    left: [
-      {
-        x: 13,
-        y: 0,
-        width: 8,
-        height: 5,
-      },
-      {
-        x: 0,
-        y: 7,
-        width: 3,
-        height: 10,
-      },
-      {
-        x: 3,
-        y: 5,
-        width: 28,
-        height: 14,
-      },
-      {
-        x: 31,
-        y: 7,
-        width: 8,
-        height: 10,
-      },
-    ],
-    right: [
-      {
-        x: 19,
-        y: 0,
-        width: 8,
-        height: 5,
-      },
-      {
-        x: 1,
-        y: 7,
-        width: 8,
-        height: 10,
-      },
-      {
-        x: 9,
-        y: 5,
-        width: 28,
-        height: 14,
-      },
-      {
-        x: 37,
-        y: 7,
-        width: 3,
-        height: 10,
-      },
-    ],
-  };
+  const collisions: CollisionBox[] = [
+    {
+      x: 0,
+      y: 5,
+      width: 40,
+      height: 14,
+    },
+    {
+      x: 14,
+      y: 0,
+      width: 12,
+      height: 5,
+    },
+  ];
 
   const state: PlayerState = {
     velocity: {
@@ -116,6 +72,24 @@ export function Player(canvasEl: HTMLCanvasElement) {
       x: 0,
       y: 0,
     },
+    prev: {
+      xPos: 0,
+      yPos: 0,
+    },
+  };
+
+  const drawCollisionBoxes = () => {
+    if (!canvasCtx) return;
+
+    canvasCtx.save();
+    canvasCtx.strokeStyle = "#a3ce27";
+
+    collisions.forEach((box) => {
+      const x = box.x + state.offset.x + state.xPos;
+      const y = box.y + state.offset.y + state.yPos;
+      canvasCtx.strokeRect(x, y, box.width, box.height);
+    });
+    canvasCtx.restore();
   };
 
   return {
@@ -179,18 +153,29 @@ export function Player(canvasEl: HTMLCanvasElement) {
       state.velocity.y = 0;
     },
 
-    drawCollisionBoxes() {
-      if (!canvasCtx) return;
-
-      canvasCtx.save();
-      canvasCtx.strokeStyle = "#fff";
-
-      collision[state.direction].forEach((box) => {
-        const x = box.x + state.offset.x + state.xPos;
-        const y = box.y + state.offset.y + state.yPos;
-        canvasCtx.strokeRect(x, y, box.width, box.height);
+    getCollisionBoxes() {
+      return collisions.map((item) => {
+        return {
+          x: item.x + state.xPos + state.offset.x,
+          y: item.y + state.yPos + state.offset.y,
+          width: item.width,
+          height: item.height,
+        };
       });
-      canvasCtx.restore();
+    },
+
+    getRect() {
+      return {
+        x: state.xPos,
+        y: state.yPos,
+        width: config.WIDTH,
+        height: config.HEIGHT,
+      };
+    },
+
+    toPrevStep() {
+      state.xPos = state.prev.xPos;
+      state.yPos = state.prev.yPos;
     },
 
     draw() {
@@ -217,11 +202,19 @@ export function Player(canvasEl: HTMLCanvasElement) {
         config.WIDTH,
         config.HEIGHT
       );
+
+      debug && drawCollisionBoxes();
     },
 
     update() {
+      state.prev.xPos = state.xPos;
+      state.prev.yPos = state.yPos;
       state.xPos = state.xPos + state.velocity.x;
       state.yPos = state.yPos + state.velocity.y;
+
+      if (state.yPos < config.MIN_Y) {
+        state.yPos = config.MIN_Y;
+      }
     },
   };
 }

@@ -1,5 +1,6 @@
 import { boxCompare } from "@/utils/box-compare";
 import type { ITileMap } from "@/types/ITileMap";
+import type { Rectangle } from "@/types/Rectangle";
 
 type TilesetRecord = Record<
   number,
@@ -56,6 +57,35 @@ export default function TileMap(
 
   const tilesetRecord = createTilesetMap();
 
+  const getTilesChunk = (rect: Rectangle) => {
+    const { tileSize } = tileset;
+    const j1 = Math.floor((rect.x - 1) / tileSize) - 1;
+    const j2 = Math.floor((rect.x + rect.width) / tileSize) + 1;
+    const i1 = Math.floor((rect.y - 1) / tileSize) - 1;
+    const i2 = Math.floor((rect.y + rect.height) / tileSize) + 1;
+
+    const tiles: {
+      i: number;
+      j: number;
+      value: number;
+    }[] = [];
+
+    for (let i = i1; i <= i2; i++) {
+      for (let j = j1; j <= j2; j++) {
+        if (data[i] && data[i][j]) {
+          const tileCode = data[i][j];
+          tiles.push({
+            i,
+            j,
+            value: tileCode,
+          });
+        }
+      }
+    }
+
+    return tiles;
+  };
+
   return {
     data,
 
@@ -84,6 +114,54 @@ export default function TileMap(
 
     getTileSize() {
       return tileset.tileSize;
+    },
+
+    getCollisionBoxes(rect: Rectangle) {
+      const { tileSize } = tileset;
+      const tilesChunk = getTilesChunk(rect);
+
+      const boxes: Rectangle[] = [];
+
+      tilesChunk.forEach((tile) => {
+        const dx = tile.j * tileSize + state.xPos;
+        const dy = tile.i * tileSize + state.yPos;
+
+        if (tile.value === 3) {
+          boxes.push({
+            x: dx,
+            y: dy,
+            width: tileSize,
+            height: tileSize,
+          });
+        }
+      });
+
+      return boxes;
+    },
+
+    drawCollisionChunk(rect: Rectangle) {
+      const { tileSize } = tileset;
+      const tiles = getTilesChunk(rect);
+
+      tiles.forEach((tile) => {
+        if (tile.value === 3) {
+          const sx = tilesetRecord[6].sx;
+          const sy = tilesetRecord[6].sy;
+          const dx = tile.j * tileSize + state.xPos;
+          const dy = tile.i * tileSize + state.yPos;
+          ctx?.drawImage(
+            tilesetImg,
+            sx,
+            sy,
+            tileSize,
+            tileSize,
+            dx,
+            dy,
+            tileSize,
+            tileSize
+          );
+        }
+      });
     },
 
     draw() {
