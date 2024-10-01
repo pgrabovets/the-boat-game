@@ -61,20 +61,31 @@ export default function Game(target: HTMLElement, level: ILevel) {
     }
   };
 
-  const handleResize = () => {
-    update();
-  };
-
   const startListening = () => {
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("keyup", onKeyUp);
-    window.addEventListener("resize", handleResize);
   };
 
   const stopListening = () => {
     document.removeEventListener("keydown", onKeyDown);
     document.removeEventListener("keyup", onKeyUp);
-    window.removeEventListener("resize", handleResize);
+  };
+
+  const getCameraCenter = () => {
+    const canvasSize = canvas.getCanvasSize();
+    const playerRect = player.getRect();
+
+    const x = Math.floor(
+      canvasSize.width / config.SCALE / 2 - playerRect.width / 2
+    );
+    const y = Math.floor(
+      canvasSize.height / config.SCALE / 2 - playerRect.height / 2
+    );
+
+    return {
+      x,
+      y,
+    };
   };
 
   const checkForCollision = () => {
@@ -116,6 +127,33 @@ export default function Game(target: HTMLElement, level: ILevel) {
     update();
   };
 
+  const updateCameraPosition = () => {
+    const center = getCameraCenter();
+    position.xPos = (player.state.xPos - center.x) * -1;
+    position.yPos = (player.state.yPos - center.y) * -1;
+
+    if (position.xPos > 0) {
+      position.xPos = 0;
+    }
+
+    if (position.yPos > 0) {
+      position.yPos = 0;
+    }
+
+    const tilemapSize = tilemap.getMapSize();
+    const canvasSize = canvas.getCanvasSize();
+    const w = Math.floor(canvasSize.width / config.SCALE) - tilemapSize.width;
+    const h = Math.floor(canvasSize.height / config.SCALE) - tilemapSize.height;
+
+    if (position.xPos < w) {
+      position.xPos = w;
+    }
+
+    if (position.yPos < h) {
+      position.yPos = h;
+    }
+  };
+
   const update = () => {
     const now = performance.now();
     const deltaTime = now - time || now;
@@ -126,8 +164,7 @@ export default function Game(target: HTMLElement, level: ILevel) {
       player.toPrevStep();
     }
 
-    position.xPos = (player.state.xPos - 430) * -1;
-    position.yPos = (player.state.yPos - 272) * -1;
+    updateCameraPosition();
 
     player.setOffset(position.xPos, position.yPos);
     tilemap.setPosition(position.xPos, position.yPos);

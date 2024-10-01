@@ -11,5 +11,9 @@ export interface ITileMap {
   load(): Promise<HTMLImageElement>;
   drawCollisionChunk(rect: Rectangle): void;
   getCollisionBoxes(rect: Rectangle): Rectangle[];
+  getMapSize(): {
+    width: number;
+    height: number;
+  };
   draw(): void;
 }

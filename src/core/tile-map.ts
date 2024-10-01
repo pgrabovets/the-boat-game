@@ -164,6 +164,14 @@ export default function TileMap(
       });
     },
 
+    getMapSize() {
+      const { tileSize } = tileset;
+      return {
+        width: data[0].length * tileSize,
+        height: data.length * tileSize,
+      };
+    },
+
     draw() {
       const canvasRect = canvasEl.getBoundingClientRect();
       const canvasBox = {
