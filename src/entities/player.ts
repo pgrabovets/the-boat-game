@@ -206,15 +206,28 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
       debug && drawCollisionBoxes();
     },
 
-    update() {
+    updateX() {
       state.prev.xPos = state.xPos;
-      state.prev.yPos = state.yPos;
       state.xPos = state.xPos + state.velocity.x;
+    },
+
+    toPrevX() {
+      state.xPos = state.prev.xPos;
+    },
+
+    updateY() {
+      state.prev.yPos = state.yPos;
       state.yPos = state.yPos + state.velocity.y;
 
       if (state.yPos < config.MIN_Y) {
         state.yPos = config.MIN_Y;
       }
     },
+
+    toPrevY() {
+      state.yPos = state.prev.yPos;
+    },
+
+    update() {},
   };
 }

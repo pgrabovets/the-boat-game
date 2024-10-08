@@ -159,9 +159,14 @@ export default function Game(target: HTMLElement, level: ILevel) {
     const deltaTime = now - time || now;
     time = now;
 
-    player.update();
+    player.updateX();
     if (checkForCollision()) {
-      player.toPrevStep();
+      player.toPrevX();
+    }
+
+    player.updateY();
+    if (checkForCollision()) {
+      player.toPrevY();
     }
 
     updateCameraPosition();
