@@ -3,8 +3,8 @@ import { Player } from "@/entities/player";
 import TileMap from "@/core/tile-map";
 import SpriteSheet from "@/core/sprite-sheet";
 import { createGameEntity } from "@/core/game";
-import { keycodes } from "@/core/input";
 import { boxCompare } from "@/utils/box-compare";
+import Input from "@/core/input";
 
 import type ILevel from "@/types/ILevel";
 import type Entity from "@/types/Entity";
@@ -13,6 +13,7 @@ const FPS = 1;
 
 export default function Game(target: HTMLElement, level: ILevel) {
   const config = {
+    debug: false,
     SCALE: 2,
     OFFSET: 0,
   };
@@ -20,9 +21,11 @@ export default function Game(target: HTMLElement, level: ILevel) {
   const canvas = Canvas(target, config.OFFSET, config.SCALE);
   const msPerFrame = 1000 / FPS;
 
-  const player = Player(canvas.el);
+  const player = Player(canvas.el, config.debug);
   const tilemap = TileMap(canvas.el, level.tilemap, config.SCALE);
-  const spriteSheet = SpriteSheet();
+  const spriteSheet = SpriteSheet("/images/sprites_sheet.png");
+
+  const input = Input();
 
   let entities: Entity[] = [];
 
@@ -32,44 +35,6 @@ export default function Game(target: HTMLElement, level: ILevel) {
   };
 
   let time = 0;
-
-  const onKeyDown = (e: KeyboardEvent) => {
-    if (keycodes.LEFT[e.key]) {
-      player.startMoveLeft();
-    }
-
-    if (keycodes.RIGHT[e.key]) {
-      player.startMoveRight();
-    }
-
-    if (keycodes.UP[e.key]) {
-      player.startMoveUp();
-    }
-
-    if (keycodes.DOWN[e.key]) {
-      player.startMoveDown();
-    }
-  };
-
-  const onKeyUp = (e: KeyboardEvent) => {
-    if (keycodes.LEFT[e.key] || keycodes.RIGHT[e.key]) {
-      player.stopMoveX();
-    }
-
-    if (keycodes.UP[e.key] || keycodes.DOWN[e.key]) {
-      player.stopMoveY();
-    }
-  };
-
-  const startListening = () => {
-    document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("keyup", onKeyUp);
-  };
-
-  const stopListening = () => {
-    document.removeEventListener("keydown", onKeyDown);
-    document.removeEventListener("keyup", onKeyUp);
-  };
 
   const getCameraCenter = () => {
     const canvasSize = canvas.getCanvasSize();
@@ -108,6 +73,7 @@ export default function Game(target: HTMLElement, level: ILevel) {
 
   const init = () => {
     canvas.mount();
+    input.startListening();
 
     player.setPosition(level.player.xPos, level.player.yPos);
 
@@ -123,7 +89,34 @@ export default function Game(target: HTMLElement, level: ILevel) {
       }
     });
 
-    startListening();
+    input.keyDown.subscribe((state) => {
+      if (state.left) {
+        player.startMoveLeft();
+      }
+
+      if (state.right) {
+        player.startMoveRight();
+      }
+
+      if (state.up) {
+        player.startMoveUp();
+      }
+
+      if (state.down) {
+        player.startMoveDown();
+      }
+    });
+
+    input.keyUp.subscribe((state) => {
+      if (!state.left && !state.right) {
+        player.stopMoveX();
+      }
+
+      if (!state.up && !state.down) {
+        player.stopMoveY();
+      }
+    });
+
     update();
   };
 
@@ -192,7 +185,7 @@ export default function Game(target: HTMLElement, level: ILevel) {
     entities.forEach((item) => item.draw());
 
     const rect = player.getRect();
-    tilemap.drawCollisionChunk(rect);
+    config.debug && tilemap.drawCollisionChunk(rect);
 
     player.draw();
   };
@@ -209,7 +202,7 @@ export default function Game(target: HTMLElement, level: ILevel) {
 
   return {
     detach() {
-      stopListening();
+      input.stopListening();
       canvas.detach();
     },
   };

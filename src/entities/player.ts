@@ -1,3 +1,5 @@
+import SpriteSheet from "@/core/sprite-sheet";
+
 import type { Direction } from "@/types/IPlayer";
 import type { CollisionBox } from "@/types/CollisionBox";
 
@@ -23,8 +25,6 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
   const canvas = canvasEl;
   const canvasCtx = canvas.getContext("2d");
 
-  let spriteSheetImg: HTMLImageElement | null = null;
-
   const config = {
     src: "/images/boat_sprite_sheet.png",
     WIDTH: 40,
@@ -33,6 +33,8 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
     VELOCITY_Y: 1,
     MIN_Y: 25,
   };
+
+  const boatSpriteSheet = SpriteSheet(config.src);
 
   const frames = {
     LEFT_SIDE: {
@@ -96,14 +98,7 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
     state,
 
     load() {
-      const img = new Image();
-      img.src = config.src;
-      spriteSheetImg = img;
-      return new Promise((resolve) => {
-        img.addEventListener("load", () => {
-          resolve(img);
-        });
-      });
+      return boatSpriteSheet.load();
     },
 
     setPosition(x: number, y: number) {
@@ -118,8 +113,8 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
 
     getPosition() {
       return {
-        xPos: state.xPos,
-        yPos: state.yPos,
+        x: state.xPos,
+        y: state.yPos,
       };
     },
 
@@ -179,7 +174,7 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
     },
 
     draw() {
-      if (!spriteSheetImg) return;
+      if (!boatSpriteSheet) return;
 
       let frame = frames.LEFT_SIDE;
 
@@ -191,8 +186,10 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
         frame = frames.LEFT_SIDE;
       }
 
+      const boatImg = boatSpriteSheet.getImage();
+
       canvasCtx?.drawImage(
-        spriteSheetImg,
+        boatImg,
         frame.xPos,
         frame.yPos,
         config.WIDTH,

@@ -1,14 +1,10 @@
-export default function SpriteSheet() {
-  const config = {
-    src: "/images/sprites_sheet.png",
-  };
-
+export default function SpriteSheet(src: string) {
   let spriteSheetImg: HTMLImageElement = new Image();
 
   return {
     load() {
       const img = new Image();
-      img.src = config.src;
+      img.src = src;
       spriteSheetImg = img;
       return new Promise((resolve) => {
         img.addEventListener("load", () => {
