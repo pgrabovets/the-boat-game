@@ -1,4 +1,5 @@
 import SpriteSheet from "@/core/sprite-sheet";
+import type { IFont } from "@/types/IFont";
 
 const fontMap = [
   [0, 4],
@@ -98,7 +99,7 @@ const fontMap = [
   [418, 4],
 ];
 
-export default function Font(canvas: HTMLCanvasElement) {
+export default function Font(canvas: HTMLCanvasElement): IFont {
   const canvasCtx = canvas.getContext("2d");
   const font = SpriteSheet("/images/04b03.font.png");
 

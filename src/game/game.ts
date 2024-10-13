@@ -6,6 +6,7 @@ import { createGameEntity } from "@/core/game";
 import { boxCompare } from "@/utils/box-compare";
 import Input from "@/core/input";
 import Font from "@/core/font";
+import StatusBar from "@/entities/status-bar";
 
 import type ILevel from "@/types/ILevel";
 import type Entity from "@/types/Entity";
@@ -26,7 +27,7 @@ export default function Game(target: HTMLElement, level: ILevel) {
   const tilemap = TileMap(canvas.el, level.tilemap, config.SCALE);
   const spriteSheet = SpriteSheet("/images/sprites_sheet.png");
   const font = Font(canvas.el);
-
+  const statusBar = StatusBar(canvas.el, font);
   const input = Input();
 
   let entities: Entity[] = [];
@@ -119,8 +120,6 @@ export default function Game(target: HTMLElement, level: ILevel) {
       }
     });
 
-    font.setPosition(120, 2);
-
     update();
   };
 
@@ -155,6 +154,9 @@ export default function Game(target: HTMLElement, level: ILevel) {
     const now = performance.now();
     const deltaTime = now - time || now;
     time = now;
+
+    player.update();
+    statusBar.setBattery(player.state.battery);
 
     player.updateX();
     if (checkForCollision()) {
@@ -192,8 +194,7 @@ export default function Game(target: HTMLElement, level: ILevel) {
     config.debug && tilemap.drawCollisionChunk(rect);
 
     player.draw();
-
-    font.draw("Test string 1234567890");
+    statusBar.draw();
   };
 
   const preload = () => {
