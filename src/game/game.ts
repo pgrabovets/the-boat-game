@@ -5,6 +5,7 @@ import SpriteSheet from "@/core/sprite-sheet";
 import { createGameEntity } from "@/core/game";
 import { boxCompare } from "@/utils/box-compare";
 import Input from "@/core/input";
+import Font from "@/core/font";
 
 import type ILevel from "@/types/ILevel";
 import type Entity from "@/types/Entity";
@@ -24,6 +25,7 @@ export default function Game(target: HTMLElement, level: ILevel) {
   const player = Player(canvas.el, config.debug);
   const tilemap = TileMap(canvas.el, level.tilemap, config.SCALE);
   const spriteSheet = SpriteSheet("/images/sprites_sheet.png");
+  const font = Font(canvas.el);
 
   const input = Input();
 
@@ -117,6 +119,8 @@ export default function Game(target: HTMLElement, level: ILevel) {
       }
     });
 
+    font.setPosition(120, 2);
+
     update();
   };
 
@@ -188,14 +192,19 @@ export default function Game(target: HTMLElement, level: ILevel) {
     config.debug && tilemap.drawCollisionChunk(rect);
 
     player.draw();
+
+    font.draw("Test string 1234567890");
   };
 
   const preload = () => {
-    Promise.all([spriteSheet.load(), player.load(), tilemap.load()]).then(
-      () => {
-        init();
-      }
-    );
+    Promise.all([
+      spriteSheet.load(),
+      player.load(),
+      tilemap.load(),
+      font.load(),
+    ]).then(() => {
+      init();
+    });
   };
 
   preload();
