@@ -1,25 +1,6 @@
 import SpriteSheet from "@/core/sprite-sheet";
-
 import type { Direction } from "@/types/IPlayer";
 import type { CollisionBox } from "@/types/CollisionBox";
-
-type PlayerState = {
-  velocity: {
-    x: number;
-    y: number;
-  };
-  xPos: number;
-  yPos: number;
-  direction: Direction;
-  offset: {
-    x: number;
-    y: number;
-  };
-  prev: {
-    xPos: number;
-    yPos: number;
-  };
-};
 
 export function Player(canvasEl: HTMLCanvasElement, debug = false) {
   const canvas = canvasEl;
@@ -62,7 +43,7 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
     },
   ];
 
-  const state: PlayerState = {
+  const state = {
     velocity: {
       x: 0,
       y: 0,
@@ -78,6 +59,8 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
       xPos: 0,
       yPos: 0,
     },
+    battery: 100,
+    oxygen: 100,
   };
 
   const drawCollisionBoxes = () => {
@@ -94,11 +77,51 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
     canvasCtx.restore();
   };
 
+  const updateBattery = () => {
+    if (state.velocity.x !== 0 || state.velocity.y !== 0) {
+      state.battery = state.battery - 0.04;
+      if (state.battery < 0) {
+        state.battery = 0;
+      }
+    }
+
+    if (state.yPos <= config.MIN_Y) {
+      state.battery = state.battery + 0.5;
+      if (state.battery > 100) {
+        state.battery = 100;
+      }
+    }
+  };
+
+  const updateOxygen = () => {
+    if (state.yPos > config.MIN_Y) {
+      state.oxygen = state.oxygen - 0.02;
+    } else {
+      state.oxygen = state.oxygen + 0.5;
+    }
+
+    if (state.oxygen < 0) {
+      state.oxygen = 0;
+    }
+
+    if (state.oxygen > 100) {
+      state.oxygen = 100;
+    }
+  };
+
   return {
     state,
 
     load() {
       return boatSpriteSheet.load();
+    },
+
+    setBattery(value: number) {
+      state.battery = value;
+    },
+
+    setOxygen(value: number) {
+      state.oxygen = value;
     },
 
     setPosition(x: number, y: number) {
@@ -225,6 +248,9 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
       state.yPos = state.prev.yPos;
     },
 
-    update() {},
+    update() {
+      updateBattery();
+      updateOxygen();
+    },
   };
 }

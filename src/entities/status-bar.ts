@@ -3,11 +3,12 @@ import type { IFont } from "@/types/IFont";
 export default function StatusBar(canvasEl: HTMLCanvasElement, font: IFont) {
   const canvasCtx = canvasEl.getContext("2d");
 
+  const xPos = 0;
+  const yPos = 0;
+
   const state = {
     battery: 100,
     oxygen: 100,
-    xPos: 0,
-    yPos: 0,
   };
 
   const offset = 4;
@@ -20,19 +21,24 @@ export default function StatusBar(canvasEl: HTMLCanvasElement, font: IFont) {
     setOxygen(value: number) {
       state.oxygen = Math.round(value);
     },
+
+    resetState() {
+      state.battery = 100;
+      state.oxygen = 100;
+    },
+
     draw() {
       if (!canvasCtx) return;
 
-      canvasCtx.beginPath();
-      canvasCtx.rect(state.xPos, state.yPos, canvasEl.width, bgHeight);
-      canvasCtx.fill();
-      font.setPosition(state.xPos + offset, state.yPos + offset);
+      canvasCtx.fillRect(xPos, yPos, canvasEl.width, bgHeight);
+
+      font.setPosition(xPos + offset, yPos + offset);
       font.draw(`Battery: ${state.battery}`);
 
-      font.setPosition(state.xPos + 62 + offset, state.yPos + offset);
+      font.setPosition(xPos + 62 + offset, yPos + offset);
       font.draw(`Oxygen: ${state.oxygen}`);
 
-      font.setPosition(state.xPos + 120 + offset, state.yPos + offset);
+      font.setPosition(xPos + 120 + offset, yPos + offset);
       font.draw("Money: 255");
     },
   };

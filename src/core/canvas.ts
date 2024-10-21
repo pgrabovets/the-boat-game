@@ -4,8 +4,22 @@ export default function Canvas(target: HTMLElement, offsetLeft = 0, scale = 1) {
 
   const init = () => {
     canvas.style.marginLeft = `${offsetLeft}px`;
-    canvas.width = window.innerWidth - offsetLeft;
-    canvas.height = window.innerHeight;
+
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+
+    if (offsetLeft === 0) {
+      if (w > 1280) {
+        w = 1280;
+      }
+
+      if (h > 960) {
+        h = 960;
+      }
+    }
+
+    canvas.width = w - offsetLeft;
+    canvas.height = h;
     canvas.className = "canvas-bg-color";
     if (canvasCtx) {
       canvasCtx.imageSmoothingEnabled = false;

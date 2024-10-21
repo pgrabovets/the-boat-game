@@ -38,6 +38,9 @@ export default function PlayPage() {
   };
 
   return (
-    <div className="absolute left-0 top-0 w-full h-full" ref={divRef}></div>
+    <div
+      className="absolute left-0 top-0 w-full h-full flex justify-center items-center"
+      ref={divRef}
+    ></div>
   );
 }

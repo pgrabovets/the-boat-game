@@ -16,7 +16,7 @@ export default function LevelEditor(level: ILevel) {
 
   const player = Player(canvas.el);
   const tilemap = TileMap(canvas.el, level.tilemap, config.SCALE);
-  const spriteSheet = SpriteSheet();
+  const spriteSheet = SpriteSheet("/images/sprites_sheet.png");
 
   const position = {
     xPos: 0,
@@ -125,10 +125,10 @@ export default function LevelEditor(level: ILevel) {
       const { xPos, yPos } = canvas.getMousePosition(e);
 
       if (newEntity) {
-        const size = newEntity?.getSize();
+        const rect = newEntity?.getRect();
         newEntity.setOffset(position.xPos, position.yPos);
-        const x = xPos - size.width - position.xPos;
-        const y = yPos - size.height - position.yPos;
+        const x = xPos - rect.width - position.xPos;
+        const y = yPos - rect.height - position.yPos;
         newEntity.setPosition(x, y);
         draw();
         return;
@@ -212,15 +212,20 @@ export default function LevelEditor(level: ILevel) {
     },
 
     getLevelData() {
+      const playerPosition = player.getPosition();
+
       const level: ILevel = {
-        player: player.getPosition(),
+        player: {
+          xPos: playerPosition.x,
+          yPos: playerPosition.y,
+        },
         tilemap: tilemap?.data || [[]],
         entities: entities.map((item) => {
-          const { xPos, yPos } = item.getPosition();
+          const { x, y } = item.getPosition();
           return {
             type: item.type,
-            xPos: xPos,
-            yPos: yPos,
+            xPos: x,
+            yPos: y,
           };
         }),
       };

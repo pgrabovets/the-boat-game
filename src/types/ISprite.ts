@@ -1,13 +1,15 @@
 export default interface ISprite {
   setPosition(x: number, y: number): void;
-  getPosition(): {
-    xPos: number;
-    yPos: number;
-  };
   setOffset(x: number, y: number): void;
-  getSize(): {
+  getRect(): {
+    x: number;
+    y: number;
     width: number;
     height: number;
+  };
+  getPosition(): {
+    x: number;
+    y: number;
   };
   pointCheck(x: number, y: number): boolean;
   draw(): void;

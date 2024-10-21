@@ -30,20 +30,22 @@ export default function Sprite(
       state.yPos = y;
     },
 
+    getPosition() {
+      return {
+        x: state.xPos,
+        y: state.yPos,
+      };
+    },
+
     setOffset(x: number, y: number) {
       state.offset.x = x;
       state.offset.y = y;
     },
 
-    getPosition() {
+    getRect() {
       return {
-        xPos: state.xPos,
-        yPos: state.yPos,
-      };
-    },
-
-    getSize() {
-      return {
+        x: state.xPos,
+        y: state.yPos,
         width: config.width,
         height: config.height,
       };

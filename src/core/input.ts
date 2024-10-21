@@ -3,20 +3,24 @@ type Keycodes = {
   RIGHT: Record<string, number>;
   UP: Record<string, number>;
   DOWN: Record<string, number>;
+  ENTER: Record<string, number>;
 };
 
 export const keycodes: Keycodes = {
   LEFT: {
-    a: 1,
+    KeyA: 1,
   },
   RIGHT: {
-    d: 1,
+    KeyD: 1,
   },
   UP: {
-    w: 1,
+    KeyW: 1,
   },
   DOWN: {
-    s: 1,
+    KeyS: 1,
+  },
+  ENTER: {
+    Enter: 1,
   },
 };
 
@@ -25,6 +29,7 @@ type InputState = {
   right: boolean;
   up: boolean;
   down: boolean;
+  enter: boolean;
 };
 
 export default function Input() {
@@ -33,6 +38,7 @@ export default function Input() {
     right: false,
     up: false,
     down: false,
+    enter: false,
   };
 
   const observers: {
@@ -44,45 +50,55 @@ export default function Input() {
   };
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (keycodes.LEFT[e.key] && !state.left && !state.right) {
+    if (keycodes.LEFT[e.code] && !state.left && !state.right) {
       state.left = true;
       observers.keydown.forEach((item) => item(state));
     }
 
-    if (keycodes.RIGHT[e.key] && !state.right && !state.left) {
+    if (keycodes.RIGHT[e.code] && !state.right && !state.left) {
       state.right = true;
       observers.keydown.forEach((item) => item(state));
     }
 
-    if (keycodes.UP[e.key] && !state.up && !state.down) {
+    if (keycodes.UP[e.code] && !state.up && !state.down) {
       state.up = true;
       observers.keydown.forEach((item) => item(state));
     }
 
-    if (keycodes.DOWN[e.key] && !state.down && !state.up) {
+    if (keycodes.DOWN[e.code] && !state.down && !state.up) {
       state.down = true;
+      observers.keydown.forEach((item) => item(state));
+    }
+
+    if (keycodes.ENTER[e.code] && !state.down && !state.up) {
+      state.enter = true;
       observers.keydown.forEach((item) => item(state));
     }
   };
 
   const onKeyUp = (e: KeyboardEvent) => {
-    if (keycodes.LEFT[e.key] && state.left) {
+    if (keycodes.LEFT[e.code] && state.left) {
       state.left = false;
       observers.keyup.forEach((item) => item(state));
     }
 
-    if (keycodes.RIGHT[e.key] && state.right) {
+    if (keycodes.RIGHT[e.code] && state.right) {
       state.right = false;
       observers.keyup.forEach((item) => item(state));
     }
 
-    if (keycodes.UP[e.key] && state.up) {
+    if (keycodes.UP[e.code] && state.up) {
       state.up = false;
       observers.keyup.forEach((item) => item(state));
     }
 
-    if (keycodes.DOWN[e.key] && state.down) {
+    if (keycodes.DOWN[e.code] && state.down) {
       state.down = false;
+      observers.keyup.forEach((item) => item(state));
+    }
+
+    if (keycodes.ENTER[e.code] && !state.down && !state.up) {
+      state.enter = false;
       observers.keyup.forEach((item) => item(state));
     }
   };
