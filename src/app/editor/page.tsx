@@ -7,12 +7,15 @@ import TilesetTool from "@/app/components/tileset-tool";
 import EntityTool from "@/app/components/entity-tool";
 import PlayerTool from "@/app/components/player-tool";
 import LevelEditor from "@/editor/level-editor";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { generateTilemap } from "@/editor/map-generate";
 import { saveLevelData } from "@/app/actions";
 import type { IEditorScene } from "@/types/IEditorScene";
 import type ILevel from "@/types/ILevel";
 
 export default function EditorPage() {
+  const router = useRouter();
   const isMounted = useMountedState();
   const [tile, setTile] = useState(1);
   const [level, setLevel] = useState<IEditorScene | null>(null);
@@ -89,11 +92,16 @@ export default function EditorPage() {
     level?.createEntity(key);
   };
 
+  const handlePlay = () => {
+    level?.detach();
+    router.push("/play");
+  };
+
   return (
     <div className="absolute inset-0 w-[320px] h-[100vh] p-2">
       <div className="flex flex-col gap-4 h-full">
         <div className="flex gap-2">
-          <Button color="dark">
+          <Button color="dark" onClick={handlePlay}>
             <div className="flex flex-row items-center gap-1">
               <Play size={16} /> Run
             </div>
