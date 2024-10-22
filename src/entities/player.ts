@@ -1,10 +1,18 @@
 import SpriteSheet from "@/core/sprite-sheet";
+import Bubble from "@/entities/bubble";
+import { getRandomNum } from "@/utils/get-random-num";
+
 import type { Direction } from "@/types/IPlayer";
 import type { CollisionBox } from "@/types/CollisionBox";
+import type { IBubble } from "@/entities/bubble";
 
 export function Player(canvasEl: HTMLCanvasElement, debug = false) {
   const canvas = canvasEl;
   const canvasCtx = canvas.getContext("2d");
+
+  let bubbles: IBubble[] = [];
+
+  let timer = 0;
 
   const config = {
     src: "/images/boat_sprite_sheet.png",
@@ -109,6 +117,38 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
     }
   };
 
+  const createBubble = () => {
+    if (timer === 0) {
+      const offset = getRandomNum(0, 9) + 6;
+
+      if (state.velocity.x > 0) {
+        const bubble = Bubble(canvasEl, state.xPos, state.yPos + offset);
+        bubbles.push(bubble);
+      }
+
+      if (state.velocity.x < 0) {
+        const bubble = Bubble(
+          canvasEl,
+          state.xPos + config.WIDTH,
+          state.yPos + offset
+        );
+        bubbles.push(bubble);
+      }
+    }
+  };
+
+  const updateBubbles = () => {
+    bubbles.forEach((b) => b.update());
+    bubbles = bubbles.filter((b) => !b.state.remove);
+  };
+
+  const updateTimer = () => {
+    timer = timer + 1;
+    if (timer > 8) {
+      timer = 0;
+    }
+  };
+
   return {
     state,
 
@@ -132,6 +172,9 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
     setOffset(x: number, y: number) {
       state.offset.x = x;
       state.offset.y = y;
+      bubbles.forEach((b: any) => {
+        b.setOffset(x, y);
+      });
     },
 
     getPosition() {
@@ -197,7 +240,7 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
     },
 
     draw() {
-      if (!boatSpriteSheet) return;
+      if (!boatSpriteSheet || !canvasCtx) return;
 
       let frame = frames.LEFT_SIDE;
 
@@ -211,17 +254,22 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
 
       const boatImg = boatSpriteSheet.getImage();
 
-      canvasCtx?.drawImage(
+      const x = state.xPos + state.offset.x;
+      const y = state.yPos + state.offset.y;
+
+      canvasCtx.drawImage(
         boatImg,
         frame.xPos,
         frame.yPos,
         config.WIDTH,
         config.HEIGHT,
-        state.xPos + state.offset.x,
-        state.yPos + state.offset.y,
+        x,
+        y,
         config.WIDTH,
         config.HEIGHT
       );
+
+      bubbles.forEach((b) => b.draw());
 
       debug && drawCollisionBoxes();
     },
@@ -242,6 +290,10 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
       if (state.yPos < config.MIN_Y) {
         state.yPos = config.MIN_Y;
       }
+
+      if (state.velocity.x !== 0) {
+        createBubble();
+      }
     },
 
     toPrevY() {
@@ -251,6 +303,8 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
     update() {
       updateBattery();
       updateOxygen();
+      updateBubbles();
+      updateTimer();
     },
   };
 }
