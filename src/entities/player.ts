@@ -12,7 +12,7 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
     HEIGHT: 19,
     VELOCITY_X: 1,
     VELOCITY_Y: 1,
-    MIN_Y: 25,
+    MIN_Y: 42,
   };
 
   const boatSpriteSheet = SpriteSheet(config.src);

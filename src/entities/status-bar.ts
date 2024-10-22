@@ -12,7 +12,7 @@ export default function StatusBar(canvasEl: HTMLCanvasElement, font: IFont) {
   };
 
   const offset = 4;
-  const bgHeight = 14;
+  const bgHeight = 13;
 
   return {
     setBattery(value: number) {
@@ -30,6 +30,7 @@ export default function StatusBar(canvasEl: HTMLCanvasElement, font: IFont) {
     draw() {
       if (!canvasCtx) return;
 
+      canvasCtx.fillStyle = "#e06f8b";
       canvasCtx.fillRect(xPos, yPos, canvasEl.width, bgHeight);
 
       font.setPosition(xPos + offset, yPos + offset);

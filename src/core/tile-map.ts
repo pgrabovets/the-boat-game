@@ -26,6 +26,8 @@ export default function TileMap(
     gap: 2,
   };
 
+  const collisionTiles = [3, 4, 5, 6, 12, 13, 14, 20, 21, 22];
+
   let tilesetImg: HTMLImageElement = new Image();
 
   const state = {
@@ -126,7 +128,7 @@ export default function TileMap(
         const dx = tile.j * tileSize + state.xPos;
         const dy = tile.i * tileSize + state.yPos;
 
-        if (tile.value === 3) {
+        if (collisionTiles.includes(tile.value)) {
           boxes.push({
             x: dx,
             y: dy,
@@ -144,7 +146,7 @@ export default function TileMap(
       const tiles = getTilesChunk(rect);
 
       tiles.forEach((tile) => {
-        if (tile.value === 3) {
+        if (collisionTiles.includes(tile.value)) {
           const sx = tilesetRecord[6].sx;
           const sy = tilesetRecord[6].sy;
           const dx = tile.j * tileSize + state.xPos;
