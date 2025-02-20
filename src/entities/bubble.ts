@@ -72,7 +72,7 @@ export default function Bubble(
         state.remove = true;
       }
 
-      if (state.timer > 40) {
+      if (state.timer > 30) {
         state.timer = 40;
         state.remove = true;
       }

@@ -144,7 +144,8 @@ export function Player(canvasEl: HTMLCanvasElement, debug = false) {
 
   const updateTimer = () => {
     timer = timer + 1;
-    if (timer > 8) {
+    const max = getRandomNum(4, 8);
+    if (timer > max) {
       timer = 0;
     }
   };
